@@ -15,11 +15,13 @@ public class StatsResponse {
     public static class TodaySummary {
         private int totalStudySec;
         private int totalDistractSec;
+        private int totalNeutralSec;
         private int sessionCount;
         private List<DistractItem> topDistracts;
         private List<SessionResponse.LogNote> recentNotes;   // 가장 최근 종료 세션의 노트 목록
         private List<DistractItem> studyDetails;
         private List<DistractItem> distractDetails;
+        private List<DistractItem> neutralDetails;
     }
 
     @Getter
@@ -49,6 +51,7 @@ public class StatsResponse {
         private LocalDateTime endedAt;
         private int studySec;
         private int distractSec;
+        private int neutralSec;
         private int totalSec;
     }
 
@@ -58,6 +61,7 @@ public class StatsResponse {
         private LocalDate date;
         private int totalStudySec;
         private int totalDistractSec;
+        private int totalNeutralSec;
         private int sessionCount;
     }
 

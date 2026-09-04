@@ -36,6 +36,7 @@ public class LogService {
 
         int addedStudySec = 0;
         int addedDistractSec = 0;
+        int addedNeutralSec = 0;
         int savedCount = 0;
 
         List<ActivityLog> logs = new ArrayList<>();
@@ -51,6 +52,7 @@ public class LogService {
 
             if ("STUDY".equals(category)) addedStudySec += item.getDurationSec();
             else if ("DISTRACT".equals(category)) addedDistractSec += item.getDurationSec();
+            else if ("NEUTRAL".equals(category)) addedNeutralSec += item.getDurationSec();
 
             logs.add(ActivityLog.builder()
                     .session(session)
@@ -69,6 +71,7 @@ public class LogService {
 
         if (addedStudySec > 0) session.addStudySec(addedStudySec);
         if (addedDistractSec > 0) session.addDistractSec(addedDistractSec);
+        if (addedNeutralSec > 0) session.addNeutralSec(addedNeutralSec);
 
         return savedCount;
     }
@@ -80,6 +83,7 @@ public class LogService {
 
         int addedStudySec = 0;
         int addedDistractSec = 0;
+        int addedNeutralSec = 0;
         int savedCount = 0;
 
         List<BrowserLog> logs = new ArrayList<>();
@@ -93,6 +97,7 @@ public class LogService {
 
             if ("STUDY".equals(category)) addedStudySec += item.getDurationSec();
             else if ("DISTRACT".equals(category)) addedDistractSec += item.getDurationSec();
+            else if ("NEUTRAL".equals(category)) addedNeutralSec += item.getDurationSec();
 
             logs.add(BrowserLog.builder()
                     .session(session)
@@ -110,6 +115,7 @@ public class LogService {
 
         if (addedStudySec > 0) session.addStudySec(addedStudySec);
         if (addedDistractSec > 0) session.addDistractSec(addedDistractSec);
+        if (addedNeutralSec > 0) session.addNeutralSec(addedNeutralSec);
 
         return savedCount;
     }

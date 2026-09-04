@@ -52,18 +52,23 @@ public class StatsService {
                 .mapToInt(StudySession::getStudySec).sum();
         int totalDistractSec = sessions.stream()
                 .mapToInt(StudySession::getDistractSec).sum();
+        int totalNeutralSec = sessions.stream()
+                .mapToInt(StudySession::getNeutralSec).sum();
 
         List<StatsResponse.DistractItem> studyDetails = collectDetailsByCategory(userId, range, "STUDY");
         List<StatsResponse.DistractItem> distractDetails = collectDetailsByCategory(userId, range, "DISTRACT");
+        List<StatsResponse.DistractItem> neutralDetails = collectDetailsByCategory(userId, range, "NEUTRAL");
 
         return StatsResponse.TodaySummary.builder()
                 .totalStudySec(totalStudySec)
                 .totalDistractSec(totalDistractSec)
+                .totalNeutralSec(totalNeutralSec)
                 .sessionCount(sessions.size())
                 .topDistracts(distractDetails.stream().limit(5).collect(Collectors.toList()))
                 .recentNotes(getRecentNotes(userId))
                 .studyDetails(studyDetails)
                 .distractDetails(distractDetails)
+                .neutralDetails(neutralDetails)
                 .build();
     }
 
@@ -112,6 +117,7 @@ public class StatsService {
                         .endedAt(s.getEndedAt())
                         .studySec(s.getStudySec())
                         .distractSec(s.getDistractSec())
+                        .neutralSec(s.getNeutralSec())
                         .totalSec(s.getTotalSec())
                         .build())
                 .collect(Collectors.toList());
@@ -132,11 +138,14 @@ public class StatsService {
                     .mapToInt(StudySession::getStudySec).sum();
             int distractSec = sessions.stream()
                     .mapToInt(StudySession::getDistractSec).sum();
+            int neutralSec = sessions.stream()
+                    .mapToInt(StudySession::getNeutralSec).sum();
 
             result.add(StatsResponse.DailyStat.builder()
                     .date(date)
                     .totalStudySec(studySec)
                     .totalDistractSec(distractSec)
+                    .totalNeutralSec(neutralSec)
                     .sessionCount(sessions.size())
                     .build());
         }
@@ -242,11 +251,14 @@ public class StatsService {
                     .mapToInt(StudySession::getStudySec).sum();
             int distractSec = sessions.stream()
                     .mapToInt(StudySession::getDistractSec).sum();
+            int neutralSec = sessions.stream()
+                    .mapToInt(StudySession::getNeutralSec).sum();
 
             result.add(StatsResponse.DailyStat.builder()
                     .date(date)
                     .totalStudySec(studySec)
                     .totalDistractSec(distractSec)
+                    .totalNeutralSec(neutralSec)
                     .sessionCount(sessions.size())
                     .build());
         }

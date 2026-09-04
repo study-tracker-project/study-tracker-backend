@@ -46,6 +46,9 @@ public class StudySession {
     @Column(name = "distract_sec", nullable = false)
     private int distractSec;
 
+    @Column(name = "neutral_sec", nullable = false)
+    private int neutralSec;
+
     @Column(name = "pause_sec", nullable = false)
     private int pauseSec;
 
@@ -68,9 +71,14 @@ public class StudySession {
         this.distractSec += sec;
     }
 
-    public void updateStudySec(int studySec, int distractSec) {
+    public void addNeutralSec(int sec) {
+        this.neutralSec += sec;
+    }
+
+    public void updateStudySec(int studySec, int distractSec, int neutralSec) {
         this.studySec = studySec;
         this.distractSec = distractSec;
+        this.neutralSec = neutralSec;
     }
 
     public void extendTarget(int additionalSec) {

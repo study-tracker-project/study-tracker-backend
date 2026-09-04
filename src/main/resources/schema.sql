@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS study_sessions (
     total_sec       INT             NOT NULL DEFAULT 0,
     study_sec       INT             NOT NULL DEFAULT 0,
     distract_sec    INT             NOT NULL DEFAULT 0,
+    neutral_sec     INT             NOT NULL DEFAULT 0,
     pause_sec       INT             NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     INDEX idx_session_user_time (user_id, started_at),

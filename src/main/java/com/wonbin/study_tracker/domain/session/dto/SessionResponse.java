@@ -19,6 +19,7 @@ public class SessionResponse {
         private int totalSec;
         private int studySec;
         private int distractSec;
+        private int neutralSec;
         private int pauseSec;
         private boolean isEnded;
 
@@ -32,6 +33,7 @@ public class SessionResponse {
                     .totalSec(session.getTotalSec())
                     .studySec(session.getStudySec())
                     .distractSec(session.getDistractSec())
+                    .neutralSec(session.getNeutralSec())
                     .pauseSec(session.getPauseSec())
                     .isEnded(session.getEndedAt() != null)
                     .build();

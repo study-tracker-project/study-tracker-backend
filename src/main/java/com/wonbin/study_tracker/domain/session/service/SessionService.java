@@ -52,6 +52,7 @@ public class SessionService {
                 .totalSec(0)
                 .studySec(0)
                 .distractSec(0)
+                .neutralSec(0)
                 .pauseSec(0)
                 .build();
 
@@ -212,6 +213,7 @@ public class SessionService {
 
         int studySec = 0;
         int distractSec = 0;
+        int neutralSec = 0;
 
         List<SessionLogNote> notes = new ArrayList<>();
         for (SessionRequest.LogNoteItem item : request.getNotes()) {
@@ -236,10 +238,11 @@ public class SessionService {
 
             if ("STUDY".equals(item.getCategory())) studySec += totalSec;
             else if ("DISTRACT".equals(item.getCategory())) distractSec += totalSec;
+            else if ("NEUTRAL".equals(item.getCategory())) neutralSec += totalSec;
         }
 
         sessionLogNoteRepository.saveAll(notes);
-        session.updateStudySec(studySec, distractSec);
+        session.updateStudySec(studySec, distractSec, neutralSec);
 
         return SessionResponse.Detail.from(session);
     }
