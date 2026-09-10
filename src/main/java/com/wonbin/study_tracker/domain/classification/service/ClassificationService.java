@@ -107,6 +107,19 @@ public class ClassificationService {
             "KakaoTalk.exe", "Discord.exe", "Steam.exe"
     );
 
+    // 브라우저 사용 시간은 익스텐션이 도메인 단위로 이미 기록한다. PC 에이전트가
+    // 같은 시간을 "chrome.exe" 같은 프로세스명으로 또 보내면 세션 시간이 이중으로
+    // 집계되므로(경과 시간보다 순공 시간이 커지는 현상), 브라우저 프로세스의
+    // ActivityLog는 무시한다 — LogService.saveActivityLogs 참고.
+    private static final Set<String> BROWSER_APPS = Set.of(
+            "chrome.exe", "msedge.exe", "firefox.exe", "whale.exe",
+            "brave.exe", "opera.exe", "vivaldi.exe", "iexplore.exe"
+    );
+
+    public boolean isBrowserApp(String appName) {
+        return appName != null && BROWSER_APPS.contains(appName);
+    }
+
     public String classifyDomain(Long userId, String domain) {
         Optional<AppClassification> custom = classificationRepository.findByUserIdAndTypeAndValue(userId, "DOMAIN", domain);
         if (custom.isPresent()) {

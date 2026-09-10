@@ -46,6 +46,11 @@ public class LogService {
                 continue;
             }
 
+            // 브라우저 시간은 익스텐션이 도메인 단위로 기록하므로 여기서는 무시(이중 집계 방지)
+            if (classificationService.isBrowserApp(item.getAppName())) {
+                continue;
+            }
+
             String category = classificationService.classifyApp(
                     userId, item.getAppName(), item.isIdle(), session.getStudyType()
             );
