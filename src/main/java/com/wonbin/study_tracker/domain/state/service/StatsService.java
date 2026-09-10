@@ -1,5 +1,6 @@
 package com.wonbin.study_tracker.domain.state.service;
 
+import com.wonbin.study_tracker.domain.classification.service.AppDisplayNameService;
 import com.wonbin.study_tracker.domain.log.repository.ActivityLogRepository;
 import com.wonbin.study_tracker.domain.log.repository.BrowserLogRepository;
 import com.wonbin.study_tracker.domain.session.dto.SessionResponse;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +31,7 @@ public class StatsService {
     private final BrowserLogRepository browserLogRepository;
     private final SessionLogNoteRepository sessionLogNoteRepository;
     private final UserRepository userRepository;
+    private final AppDisplayNameService appDisplayNameService;
 
     // 하루 기준 시작/종료 시각 계산(day_change_hour 적용)
     public LocalDateTime[] getDayRange(Long userId, LocalDate date) {
@@ -90,16 +93,29 @@ public class StatsService {
                     .build());
         }
 
-        details.sort((a, b) -> b.getTotalSec() - a.getTotalSec());
-        return details;
+        Map<String, String> names = appDisplayNameService.resolve(
+                details.stream().map(StatsResponse.DistractItem::getName).toList());
+        List<StatsResponse.DistractItem> named = details.stream()
+                .map(d -> StatsResponse.DistractItem.builder()
+                        .name(d.getName())
+                        .displayName(names.get(d.getName()))
+                        .totalSec(d.getTotalSec())
+                        .build())
+                .sorted((a, b) -> b.getTotalSec() - a.getTotalSec())
+                .collect(Collectors.toList());
+        return named;
     }
 
     private List<SessionResponse.LogNote> getRecentNotes(Long userId) {
-        return sessionRepository.findFirstByUserIdAndEndedAtIsNotNullOrderByEndedAtDesc(userId)
+        List<SessionResponse.LogNote> notes = sessionRepository.findFirstByUserIdAndEndedAtIsNotNullOrderByEndedAtDesc(userId)
                 .map(session -> sessionLogNoteRepository.findBySessionId(session.getId()).stream()
                         .map(SessionResponse.LogNote::from)
                         .collect(Collectors.toList()))
                 .orElse(List.of());
+        Map<String, String> names = appDisplayNameService.resolve(
+                notes.stream().map(SessionResponse.LogNote::getLogValue).toList());
+        notes.forEach(n -> n.withDisplayName(names.get(n.getLogValue())));
+        return notes;
     }
 
     @Transactional(readOnly = true)

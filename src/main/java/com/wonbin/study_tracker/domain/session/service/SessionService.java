@@ -1,5 +1,6 @@
 package com.wonbin.study_tracker.domain.session.service;
 
+import com.wonbin.study_tracker.domain.classification.service.AppDisplayNameService;
 import com.wonbin.study_tracker.domain.classification.service.ClassificationService;
 import com.wonbin.study_tracker.domain.log.entity.ActivityLog;
 import com.wonbin.study_tracker.domain.log.entity.BrowserLog;
@@ -31,6 +32,7 @@ public class SessionService {
     private final BrowserLogRepository browserLogRepository;
     private final SessionLogNoteRepository sessionLogNoteRepository;
     private final ClassificationService classificationService;
+    private final AppDisplayNameService appDisplayNameService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -116,9 +118,13 @@ public class SessionService {
     public List<SessionResponse.LogNote> getNotes(Long userId, Long sessionId) {
         getSessionByUser(userId, sessionId); // 접근 권한 검증
 
-        return sessionLogNoteRepository.findBySessionId(sessionId).stream()
+        List<SessionResponse.LogNote> notes = sessionLogNoteRepository.findBySessionId(sessionId).stream()
                 .map(SessionResponse.LogNote::from)
                 .toList();
+        Map<String, String> names = appDisplayNameService.resolve(
+                notes.stream().map(SessionResponse.LogNote::getLogValue).toList());
+        notes.forEach(n -> n.withDisplayName(names.get(n.getLogValue())));
+        return notes;
     }
 
     @Transactional(readOnly = true)
@@ -144,7 +150,7 @@ public class SessionService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional  // readOnly 아님: 처음 보는 앱/도메인 표시 이름을 캐시에 저장할 수 있음
     public List<SessionResponse.LogSummaryItem> getLogSummary(Long userId, Long sessionId) {
         StudySession session = getSessionByUser(userId, sessionId);
 
@@ -190,8 +196,20 @@ public class SessionService {
                     .build());
         }
 
-        result.sort((a, b) -> b.getTotalSec() - a.getTotalSec());
-        return result;
+        // 완료 팝업은 처음 보는 앱/도메인도 AI로 이름 정리 (useAi = true)
+        Map<String, String> names = appDisplayNameService.resolve(
+                result.stream().map(SessionResponse.LogSummaryItem::getLogValue).toList(), true);
+        List<SessionResponse.LogSummaryItem> named = result.stream()
+                .map(i -> SessionResponse.LogSummaryItem.builder()
+                        .logType(i.getLogType())
+                        .logValue(i.getLogValue())
+                        .displayName(names.get(i.getLogValue()))
+                        .totalSec(i.getTotalSec())
+                        .category(i.getCategory())
+                        .build())
+                .sorted((a, b) -> b.getTotalSec() - a.getTotalSec())
+                .toList();
+        return named;
     }
 
     @Transactional

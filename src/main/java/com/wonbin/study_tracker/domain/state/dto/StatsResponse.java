@@ -28,6 +28,7 @@ public class StatsResponse {
     @Builder
     public static class DistractItem {
         private String name;
+        private String displayName;
         private int totalSec;
     }
 

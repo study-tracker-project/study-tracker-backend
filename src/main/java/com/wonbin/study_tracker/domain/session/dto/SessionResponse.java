@@ -44,10 +44,11 @@ public class SessionResponse {
     @Getter
     @Builder
     public static class LogSummaryItem {
-        private String logType;    // APP / DOMAIN
-        private String logValue;   // idea64.exe / youtube.com
-        private int totalSec;      // 총 사용 시간
-        private String category;   // 자동 분류 기본값
+        private String logType;      // APP / DOMAIN
+        private String logValue;     // idea64.exe / youtube.com
+        private String displayName;  // 사람이 읽을 이름 (예: IntelliJ IDEA)
+        private int totalSec;        // 총 사용 시간
+        private String category;     // 자동 분류 기본값
     }
 
     // 세션 완료 후 메모 조회용
@@ -57,6 +58,7 @@ public class SessionResponse {
         private Long id;
         private String logType;
         private String logValue;
+        private String displayName;
         private String category;
         private String memo;
 
@@ -68,6 +70,11 @@ public class SessionResponse {
                     .category(note.getCategory())
                     .memo(note.getMemo())
                     .build();
+        }
+
+        public LogNote withDisplayName(String displayName) {
+            this.displayName = displayName;
+            return this;
         }
     }
 }

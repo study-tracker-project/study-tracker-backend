@@ -110,3 +110,30 @@ CREATE TABLE IF NOT EXISTS session_log_notes (
                                                  INDEX idx_note_session (session_id),
                                                  FOREIGN KEY (session_id) REFERENCES study_sessions (id)
 );
+
+-- 8. 앱/도메인 표시 이름 캐시 (raw 실행 파일명/도메인 -> 사람이 읽을 이름)
+--    처음 보는 값만 AI(Claude Haiku)로 정리하고 여기 저장해서 재사용한다.
+CREATE TABLE IF NOT EXISTS app_display_names (
+    raw_value       VARCHAR(255)    NOT NULL,
+    display_name    VARCHAR(255)    NOT NULL,
+    created_at      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (raw_value)
+    );
+
+-- 자주 쓰는 앱은 미리 채워둬서 AI 호출 없이 바로 뜨게 한다.
+INSERT IGNORE INTO app_display_names (raw_value, display_name) VALUES
+    ('code.exe', 'Visual Studio Code'), ('idea64.exe', 'IntelliJ IDEA'),
+    ('devenv.exe', 'Visual Studio'), ('notion.exe', 'Notion'),
+    ('obsidian.exe', 'Obsidian'), ('pycharm64.exe', 'PyCharm'),
+    ('webstorm64.exe', 'WebStorm'), ('datagrip64.exe', 'DataGrip'),
+    ('kakaotalk.exe', '카카오톡'), ('discord.exe', 'Discord'),
+    ('steam.exe', 'Steam'), ('spotify.exe', 'Spotify'),
+    ('youtubemusic.exe', 'YouTube Music'), ('clock.exe', '시계'),
+    ('calculator.exe', '계산기'), ('windowsterminal.exe', 'Windows Terminal'),
+    ('explorer.exe', '파일 탐색기'), ('chrome.exe', 'Chrome'),
+    ('msedge.exe', 'Microsoft Edge'), ('firefox.exe', 'Firefox'),
+    ('whale.exe', '웨일'), ('notepad.exe', '메모장'),
+    ('notepad++.exe', 'Notepad++'), ('powerpnt.exe', 'PowerPoint'),
+    ('winword.exe', 'Word'), ('excel.exe', 'Excel'),
+    ('onenote.exe', 'OneNote'), ('slack.exe', 'Slack'),
+    ('teams.exe', 'Teams'), ('zoom.exe', 'Zoom');
