@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
 
 import java.util.*;
@@ -62,7 +63,7 @@ public class AppDisplayNameService {
             }
         }
 
-        if (!misses.isEmpty() && useAi && !anthropicApiKey.isBlank()) {
+        if (!misses.isEmpty() && useAi && StringUtils.hasText(anthropicApiKey)) {
             aiResolve(misses).forEach((raw, name) -> {
                 if (name != null && !name.isBlank()) {
                     result.put(raw, name);

@@ -2,11 +2,13 @@ package com.wonbin.study_tracker.domain.classification.service;
 
 import com.wonbin.study_tracker.domain.classification.entity.AppDisplayName;
 import com.wonbin.study_tracker.domain.classification.repository.AppDisplayNameRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,12 @@ class AppDisplayNameServiceTest {
 
     @InjectMocks
     private AppDisplayNameService service;
+
+    @BeforeEach
+    void setUp() {
+        // @Value 필드는 Mockito가 주입하지 않으므로 명시적으로 비워둔다(키 없음 상태)
+        ReflectionTestUtils.setField(service, "anthropicApiKey", "");
+    }
 
     @Test
     void heuristic은_exe_확장자를_떼고_첫글자를_대문자로() {
