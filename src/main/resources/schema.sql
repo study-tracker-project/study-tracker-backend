@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS session_log_notes (
                                                  log_value   VARCHAR(255)    NOT NULL COMMENT '예: idea64.exe / youtube.com',
                                                  category    VARCHAR(10)     NOT NULL COMMENT 'STUDY / DISTRACT / NEUTRAL',
                                                  memo        VARCHAR(500),
+                                                 total_sec   INT             NOT NULL DEFAULT 0,
                                                  PRIMARY KEY (id),
                                                  INDEX idx_note_session (session_id),
                                                  FOREIGN KEY (session_id) REFERENCES study_sessions (id)

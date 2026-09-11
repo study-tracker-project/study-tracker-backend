@@ -30,4 +30,7 @@ public class SessionLogNote {
 
     @Column(name = "memo", length = 500)
     private String memo;
+
+    @Column(name = "total_sec", nullable = false)
+    private int totalSec;
 }

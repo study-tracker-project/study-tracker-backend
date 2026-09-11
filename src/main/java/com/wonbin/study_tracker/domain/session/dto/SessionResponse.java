@@ -61,6 +61,7 @@ public class SessionResponse {
         private String displayName;
         private String category;
         private String memo;
+        private int totalSec;
 
         public static LogNote from(com.wonbin.study_tracker.domain.session.entity.SessionLogNote note) {
             return LogNote.builder()
@@ -69,6 +70,7 @@ public class SessionResponse {
                     .logValue(note.getLogValue())
                     .category(note.getCategory())
                     .memo(note.getMemo())
+                    .totalSec(note.getTotalSec())
                     .build();
         }
 

@@ -235,14 +235,6 @@ public class SessionService {
 
         List<SessionLogNote> notes = new ArrayList<>();
         for (SessionRequest.LogNoteItem item : request.getNotes()) {
-            notes.add(SessionLogNote.builder()
-                    .session(session)
-                    .logType(item.getLogType())
-                    .logValue(item.getLogValue())
-                    .category(item.getCategory())
-                    .memo(item.getMemo() != null ? item.getMemo().trim() : null)
-                    .build());
-
             int totalSec = 0;
             if ("APP".equals(item.getLogType())) {
                 totalSec = activityLogRepository.findBySessionId(sessionId).stream()
@@ -253,6 +245,15 @@ public class SessionService {
                         .filter(l -> l.getDomain().equals(item.getLogValue()))
                         .mapToInt(BrowserLog::getDurationSec).sum();
             }
+
+            notes.add(SessionLogNote.builder()
+                    .session(session)
+                    .logType(item.getLogType())
+                    .logValue(item.getLogValue())
+                    .category(item.getCategory())
+                    .memo(item.getMemo() != null ? item.getMemo().trim() : null)
+                    .totalSec(totalSec)
+                    .build());
 
             if ("STUDY".equals(item.getCategory())) studySec += totalSec;
             else if ("DISTRACT".equals(item.getCategory())) distractSec += totalSec;
