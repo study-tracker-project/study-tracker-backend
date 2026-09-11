@@ -118,13 +118,31 @@ public class SessionService {
     public List<SessionResponse.LogNote> getNotes(Long userId, Long sessionId) {
         getSessionByUser(userId, sessionId); // 접근 권한 검증
 
+        Map<String, Integer> durations = buildDurationMap(sessionId);
         List<SessionResponse.LogNote> notes = sessionLogNoteRepository.findBySessionId(sessionId).stream()
                 .map(SessionResponse.LogNote::from)
                 .toList();
         Map<String, String> names = appDisplayNameService.resolve(
                 notes.stream().map(SessionResponse.LogNote::getLogValue).toList());
-        notes.forEach(n -> n.withDisplayName(names.get(n.getLogValue())));
+        notes.forEach(n -> {
+            n.withDisplayName(names.get(n.getLogValue()));
+            n.withTotalSec(durations.getOrDefault(n.getLogType() + "::" + n.getLogValue(), 0));
+        });
         return notes;
+    }
+
+    // 세션의 ActivityLog/BrowserLog를 앱/도메인별로 합산한다("APP::idea64.exe" -> 총 초).
+    // 완료 팝업(log-summary), 노트 조회, 완료 저장(finalize)이 전부 같은 원본 로그에서
+    // 이 시간을 구하므로 한 곳에 모아 재사용한다.
+    private Map<String, Integer> buildDurationMap(Long sessionId) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        for (ActivityLog log : activityLogRepository.findBySessionId(sessionId)) {
+            map.merge("APP::" + log.getAppName(), log.getDurationSec(), Integer::sum);
+        }
+        for (BrowserLog log : browserLogRepository.findBySessionId(sessionId)) {
+            map.merge("DOMAIN::" + log.getDomain(), log.getDurationSec(), Integer::sum);
+        }
+        return map;
     }
 
     @Transactional(readOnly = true)
@@ -154,28 +172,14 @@ public class SessionService {
     public List<SessionResponse.LogSummaryItem> getLogSummary(Long userId, Long sessionId) {
         StudySession session = getSessionByUser(userId, sessionId);
 
-        Map<String, int[]> summaryMap = new LinkedHashMap<>();
-
-        List<ActivityLog> activityLogs = activityLogRepository.findBySessionId(sessionId);
-        for (ActivityLog log : activityLogs) {
-            String key = "APP::" + log.getAppName();
-            summaryMap.computeIfAbsent(key, k -> new int[]{0});
-            summaryMap.get(key)[0] += log.getDurationSec();
-        }
-
-        List<BrowserLog> browserLogs = browserLogRepository.findBySessionId(sessionId);
-        for (BrowserLog log : browserLogs) {
-            String key = "DOMAIN::" + log.getDomain();
-            summaryMap.computeIfAbsent(key, k -> new int[]{0});
-            summaryMap.get(key)[0] += log.getDurationSec();
-        }
+        Map<String, Integer> durations = buildDurationMap(sessionId);
 
         List<SessionResponse.LogSummaryItem> result = new ArrayList<>();
-        for (Map.Entry<String, int[]> entry : summaryMap.entrySet()) {
-            String[] parts = entry.getKey().split("::");
+        for (Map.Entry<String, Integer> entry : durations.entrySet()) {
+            String[] parts = entry.getKey().split("::", 2);
             String logType = parts[0];
             String logValue = parts[1];
-            int totalSec = entry.getValue()[0];
+            int totalSec = entry.getValue();
 
             String defaultCategory;
             if ("APP".equals(logType)) {
@@ -233,18 +237,10 @@ public class SessionService {
         int distractSec = 0;
         int neutralSec = 0;
 
+        Map<String, Integer> durations = buildDurationMap(sessionId);
         List<SessionLogNote> notes = new ArrayList<>();
         for (SessionRequest.LogNoteItem item : request.getNotes()) {
-            int totalSec = 0;
-            if ("APP".equals(item.getLogType())) {
-                totalSec = activityLogRepository.findBySessionId(sessionId).stream()
-                        .filter(l -> l.getAppName().equals(item.getLogValue()))
-                        .mapToInt(ActivityLog::getDurationSec).sum();
-            } else {
-                totalSec = browserLogRepository.findBySessionId(sessionId).stream()
-                        .filter(l -> l.getDomain().equals(item.getLogValue()))
-                        .mapToInt(BrowserLog::getDurationSec).sum();
-            }
+            int totalSec = durations.getOrDefault(item.getLogType() + "::" + item.getLogValue(), 0);
 
             notes.add(SessionLogNote.builder()
                     .session(session)
@@ -252,7 +248,6 @@ public class SessionService {
                     .logValue(item.getLogValue())
                     .category(item.getCategory())
                     .memo(item.getMemo() != null ? item.getMemo().trim() : null)
-                    .totalSec(totalSec)
                     .build());
 
             if ("STUDY".equals(item.getCategory())) studySec += totalSec;

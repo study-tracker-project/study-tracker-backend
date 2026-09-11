@@ -70,12 +70,16 @@ public class SessionResponse {
                     .logValue(note.getLogValue())
                     .category(note.getCategory())
                     .memo(note.getMemo())
-                    .totalSec(note.getTotalSec())
                     .build();
         }
 
         public LogNote withDisplayName(String displayName) {
             this.displayName = displayName;
+            return this;
+        }
+
+        public LogNote withTotalSec(int totalSec) {
+            this.totalSec = totalSec;
             return this;
         }
     }
